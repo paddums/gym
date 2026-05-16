@@ -262,14 +262,26 @@ const EXERCISES_P2S1 = [
   { id:311, name:"Pogo Hops",       fullName:"Pogo Hops",                  icon:"⚡", leftSets:3, rightSets:0, reps:"20",       block:'E', blockRole:3, bodyweight:true, cue:"Toes up toward the head. Minimize ground contact time.", tempo:null },
 ];
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   DATA — PHASE 2, PROGRAMME B
+═══════════════════════════════════════════════════════════════════════════ */
+const EXERCISES_P2S2 = [
+  { id:321, name:"Pallof Rotation", fullName:"Tall Kneeling Banded Pallof Press with Rotation", icon:"🎯", leftSets:3, rightSets:2, reps:"6",       block:'A', blockRole:1, sideName:"Side", bodyweight:true, cue:"Dynamic Stability & Upper Chain Integration. Use the right hand to pull down for every rep. Keep the elbow at 90 degrees.", tempo:null },
+  { id:322, name:"OH Band Catch",   fullName:"Quadruped Overhead Banded Catch",                 icon:"🙌", leftSets:3, rightSets:2, reps:"10",      block:'B', blockRole:1, sideName:"Side", bodyweight:true, cue:"Dynamic Stability & Upper Chain Integration. Catch in overhead flexion and hold for 3-2-1 at the top.", tempo:[{label:"Hold",duration:3,color:"#60a5fa"}] },
+  { id:323, name:"Plank Abd.",      fullName:"Prone Plank Banded Horizontal Abduction",          icon:"🧱", leftSets:4, rightSets:2, reps:"8",       block:'C', blockRole:1, sideName:"Side", bodyweight:true, cue:"Dynamic Stability & Upper Chain Integration. Lift to 90 degrees and hold for 0.5s at the top.", tempo:null },
+  { id:324, name:"Shoulder Rot.",   fullName:"Side-Lying Internal/External Rotation",            icon:"🔄", leftSets:2, rightSets:2, reps:"8 each",  block:'D', blockRole:1, leftLabel:"Internal Rotation", rightLabel:"External Rotation", bodyweight:true, cue:"Dynamic Stability & Upper Chain Integration. Hold for 3s at internal and external end-ranges.", tempo:[{label:"End Hold",duration:3,color:"#fbbf24"}] },
+  { id:325, name:"W-Hold Iso",      fullName:"Banded W-Hold Isometric",                          icon:"⏱️", leftSets:3, rightSets:0, reps:"3 x 10s", block:'E', blockRole:1, isDuration:true, bodyweight:true, cue:"Dynamic Stability & Upper Chain Integration. Maintain 90/90 shoulder and elbow alignment; march out for band tension. Complete 3 reps with a 10s hold each rep.", tempo:[{label:"Hold",duration:10,color:"#34d399"}] },
+];
+
 const PHASE_ORDER = ['P1','P2'];
-const WORKOUTS_BY_PHASE = { P1: ['A','B','C'], P2: ['P2S1'] };
-const EXERCISES_BY_DAY = { A: EXERCISES_A, B: EXERCISES_B, C: EXERCISES_C, P2S1: EXERCISES_P2S1 };
+const WORKOUTS_BY_PHASE = { P1: ['A','B','C'], P2: ['P2S1','P2S2'] };
+const EXERCISES_BY_DAY = { A: EXERCISES_A, B: EXERCISES_B, C: EXERCISES_C, P2S1: EXERCISES_P2S1, P2S2: EXERCISES_P2S2 };
 const WORKOUT_META = {
-  A: { short:'A', label:'Workout A', badge:'Day A', color:'#1d4ed8' },
-  B: { short:'B', label:'Workout B', badge:'Day B', color:'#4c1d95' },
-  C: { short:'C', label:'Workout C', badge:'Day C', color:'#065f46' },
-  P2S1: { short:'P2.1', label:'Phase 2 Session 1', badge:'P2 S1', color:'#be123c' }
+  A: { short:'A', label:'Phase 1 Programme A', badge:'P1 A', color:'#1d4ed8', progressLabel:'Phase 1 Programme A' },
+  B: { short:'B', label:'Phase 1 Programme B', badge:'P1 B', color:'#4c1d95', progressLabel:'Phase 1 Programme B' },
+  C: { short:'C', label:'Phase 1 Programme C', badge:'P1 C', color:'#065f46', progressLabel:'Phase 1 Programme C' },
+  P2S1: { short:'A', label:'Phase 2 Programme A', badge:'P2 A', color:'#be123c', progressLabel:'Phase 2 Programme A' },
+  P2S2: { short:'B', label:'Phase 2 Programme B', badge:'P2 B', color:'#db2777', progressLabel:'Phase 2 Programme B · Dynamic Stability & Upper Chain Integration' }
 };
 const PHASE_META = {
   P1: { short:'P1', label:'Phase 1' },
@@ -369,14 +381,15 @@ function getExercisesForSession(sess){ return getExercisesByDay(sess.day || 'A')
 function workoutMeta(day)            { return WORKOUT_META[day] || WORKOUT_META.A; }
 function workoutLabel(day)           { return workoutMeta(day).label; }
 function workoutBadge(day)           { return workoutMeta(day).badge; }
-function phaseForDay(day)            { return day === 'P2S1' ? 'P2' : 'P1'; }
+function progressLabel(day)          { return workoutMeta(day).progressLabel || workoutLabel(day); }
+function phaseForDay(day)            { return String(day || '').startsWith('P2') ? 'P2' : 'P1'; }
 function firstWorkoutForPhase(phase) { return WORKOUTS_BY_PHASE[phase]?.[0] || 'A'; }
 
 function suggestNextDay() {
   const keys = Object.keys(S.sessions).sort().reverse();
   for (const k of keys) {
     if (k === S.today) continue;
-    if (S.sessions[k].day) { const cycle = {A:'B',B:'C',C:'A',P2S1:'P2S1'}; return cycle[S.sessions[k].day] || 'A'; }
+    if (S.sessions[k].day) { const cycle = {A:'B',B:'C',C:'A',P2S1:'P2S2',P2S2:'P2S1'}; return cycle[S.sessions[k].day] || 'A'; }
   }
   return 'A';
 }
@@ -392,7 +405,8 @@ const BLOCK_NAMES = {
   A: { A:'Quads & Glutes', B:'Power & Quads', C:'Single-Leg Strength' },
   B: { A:'Strength & Core', B:'Hamstring & Stability', C:'Power & Lateral Hip', D:'Calf & Vertical Press' },
   C: { A:'Hips & Lateral', B:'Pull & Stability', C:'Press & Rotation', D:'Stability' },
-  P2S1: { A:'Strength & Control', B:'Power & Stability', C:'Strength & Resistance', D:'Lateral & Core', E:'Finisher' }
+  P2S1: { A:'Strength & Control', B:'Power & Stability', C:'Strength & Resistance', D:'Lateral & Core', E:'Finisher' },
+  P2S2: { A:'Dynamic Stability & Upper Chain Integration', B:'Dynamic Stability & Upper Chain Integration', C:'Dynamic Stability & Upper Chain Integration', D:'Dynamic Stability & Upper Chain Integration', E:'Dynamic Stability & Upper Chain Integration' }
 };
 function isBlockWorkout() { return true; }
 function blockLetters(exs) { return [...new Set(exs.map(x => x.block))]; }
@@ -743,7 +757,7 @@ function renderNav() {
   const workoutBtns = WORKOUTS_BY_PHASE[activePhase].map(d =>
     `<button onclick="switchDay('${d}')"
       title="${workoutLabel(d)}"
-      style="min-width:${d === 'P2S1' ? '48' : '26'}px;height:22px;border-radius:6px;font-size:10px;font-weight:900;
+      style="min-width:26px;height:22px;border-radius:6px;font-size:10px;font-weight:900;
              background:${S.day===d?'#1d4ed8':'#0f172a'};color:${S.day===d?'#fff':'#475569'};
              border:1px solid ${S.day===d?'#3b82f6':'#1e293b'}">${workoutMeta(d).short}</button>`
   ).join('');
@@ -802,15 +816,18 @@ function renderToday() {
   // Side label: "Left Leg" vs "Left Side" etc.
   const sideN = ex.sideName || "Leg";
   const asymmetric = ex.leftSets !== ex.rightSets;
+  const customSideLabels = !!(ex.leftLabel || ex.rightLabel);
+  const leftSideText = ex.leftLabel || `Left ${sideN}${asymmetric ? " (Focus)" : ""}`;
+  const rightSideText = ex.rightLabel || `Right ${sideN}`;
 
   const chips = !sym ? `<div class="chips">
-    <span class="chip" style="background:#1e3a5f;color:#60a5fa;border:1px solid #1d4ed8">◐ Left ${sideN}: ${ex.leftSets} sets</span>
-    <span class="chip" style="background:#1e293b;color:#64748b;border:1px solid #334155">◑ Right ${sideN}: ${ex.rightSets} sets</span>
-    ${asymmetric ? `<span class="chip" style="background:#2d1d05;color:#f59e0b;border:1px solid #92400e">⚖ Asymmetric</span>` : ""}
+    <span class="chip" style="background:#1e3a5f;color:#60a5fa;border:1px solid #1d4ed8">◐ ${leftSideText}: ${ex.leftSets} sets</span>
+    <span class="chip" style="background:#1e293b;color:#64748b;border:1px solid #334155">◑ ${rightSideText}: ${ex.rightSets} sets</span>
+    ${asymmetric && !customSideLabels ? `<span class="chip" style="background:#2d1d05;color:#f59e0b;border:1px solid #92400e">⚖ Asymmetric</span>` : ""}
   </div>` : "";
 
-  const leftLabel  = sym ? null : `Left ${sideN}${asymmetric ? " (Focus)" : ""}`;
-  const rightLabel = sym ? null : `Right ${sideN}`;
+  const leftLabel  = sym ? null : leftSideText;
+  const rightLabel = sym ? null : rightSideText;
   const setsHtml = sym
     ? setsGridHTML("left", xp.left, null)
     : setsGridHTML("left", xp.left, leftLabel) + '<div class="section-divider"></div>' + setsGridHTML("right", xp.right, rightLabel);
@@ -1133,17 +1150,10 @@ function buildProgressHTML() {
       </div>`;
   }
 
-  html += `<div class="progress-section-label">Workout A</div>`;
-  EXERCISES_A.forEach(ex => { html += exCard(ex); });
-
-  html += `<div class="progress-section-label" style="margin-top:8px">Workout B</div>`;
-  EXERCISES_B.forEach(ex => { html += exCard(ex); });
-
-  html += `<div class="progress-section-label" style="margin-top:8px">Workout C</div>`;
-  EXERCISES_C.forEach(ex => { html += exCard(ex); });
-
-  html += `<div class="progress-section-label" style="margin-top:8px">Phase 2 Session 1</div>`;
-  EXERCISES_P2S1.forEach(ex => { html += exCard(ex); });
+  [...WORKOUTS_BY_PHASE.P1, ...WORKOUTS_BY_PHASE.P2].forEach((day, i) => {
+    html += `<div class="progress-section-label" style="${i ? 'margin-top:8px' : ''}">${progressLabel(day)}</div>`;
+    getExercisesByDay(day).forEach(ex => { html += exCard(ex); });
+  });
 
   html += `<div style="height:32px"></div>`;
   return html;
