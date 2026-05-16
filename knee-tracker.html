@@ -245,7 +245,7 @@ const EXERCISES_C = [
 ═══════════════════════════════════════════════════════════════════════════ */
 const EXERCISES_P2S1 = [
   // Block A — Strength & Control
-  { id:301, name:"SL Leg Press",    fullName:"Single-Leg Leg Press",       icon:"🦿", leftSets:3, rightSets:3, reps:"—",        block:'A', blockRole:1, sideName:"Leg", cue:"Controlled movement. Use your current leg press prescription until the exact Phase 2 rep target is added.", tempo:null },
+  { id:301, name:"SL Leg Press",    fullName:"Single-Leg Leg Press",       icon:"🦿", leftSets:3, rightSets:3, reps:"5",        block:'A', blockRole:1, sideName:"Leg", cue:"Controlled movement. Use your current leg press prescription until the exact Phase 2 loading target is added.", tempo:null },
   { id:302, name:"Step-Downs",      fullName:"Single-Leg Step-Downs",      icon:"🪜", leftSets:3, rightSets:3, reps:"5",        block:'A', blockRole:2, sideName:"Leg", bodyweight:true, cue:"No rest on the box. Keep the knee from buckling. Focus on a nice quiet landing.", tempo:null },
   // Block B — Power & Stability
   { id:303, name:"SL Box Squat",    fullName:"Single-Leg Box Squat",       icon:"📦", leftSets:3, rightSets:3, reps:"8",        block:'B', blockRole:1, sideName:"Leg", bodyweight:true, cue:"Bodyweight only for now. Tight core. No resting your weight at the bottom.", tempo:null },
@@ -423,6 +423,12 @@ function nextInBlockIndex(i, exs = getExercises()) {
   const idxs = blockIndexes(exs, blockIdxForExIdx(i, exs));
   const pos = idxs.indexOf(i);
   return pos >= 0 && pos < idxs.length - 1 ? idxs[pos + 1] : null;
+}
+function shouldAdvanceAfterSet(ex, xp, side, setIdx) {
+  if (ex.rightSets === 0) return true;
+  if (side === 'left' && setIdx < ex.rightSets && !xp.right[setIdx]) return false;
+  if (side === 'right' && setIdx < ex.leftSets && !xp.left[setIdx]) return false;
+  return true;
 }
 function firstIncompleteInBlock(exs, prog, bi) {
   const idxs = blockIndexes(exs, bi);
@@ -1282,9 +1288,11 @@ function goTo(i) {
 
 function toggleSet(side, i) {
   const exs = getExercises();
+  const ex = exs[S.idx];
   const prog = todayProg();
-  const wasDone = prog[exs[S.idx].id][side][i];
-  prog[exs[S.idx].id][side][i] = !wasDone;
+  const xp = prog[ex.id];
+  const wasDone = xp[side][i];
+  xp[side][i] = !wasDone;
   saveAllSessions();
   updateHeaderProgress();
   renderNav();
@@ -1298,15 +1306,15 @@ function toggleSet(side, i) {
   updateLegCount(side);
 
   if (!wasDone) {
-    const nowDone = isExDone(exs[S.idx].id, todayProg(), exs);
+    const nowDone = isExDone(ex.id, todayProg(), exs);
     if (isBlockWorkout()) {
       const bi = blockIdxForExIdx(S.idx, exs);
       const nextIdx = nextInBlockIndex(S.idx, exs);
       if (nextIdx !== null) {
         if (nowDone) {
           // Move directly to the next exercise in the block before resting.
-          S.rpeModal = { exId: exs[S.idx].id, afterAction: 'flip' };
-        } else {
+          S.rpeModal = { exId: ex.id, afterAction: 'flip' };
+        } else if (shouldAdvanceAfterSet(ex, xp, side, i)) {
           S.restFlipTo = null;
           goTo(nextIdx);
           return;
@@ -1315,7 +1323,7 @@ function toggleSet(side, i) {
         S.restFlipTo = firstIncompleteInBlock(exs, todayProg(), bi);
         if (nowDone) {
           const lastBlock = blockLetters(exs).length - 1;
-          S.rpeModal = { exId: exs[S.idx].id, afterAction: (S.restFlipTo === null && bi === lastBlock) ? 'done' : 'rest' };
+          S.rpeModal = { exId: ex.id, afterAction: (S.restFlipTo === null && bi === lastBlock) ? 'done' : 'rest' };
         } else {
           startRest(); return;
         }
@@ -1323,7 +1331,7 @@ function toggleSet(side, i) {
     } else {
       if (nowDone) {
         // Linear workout: show RPE modal after final set
-        S.rpeModal = { exId: exs[S.idx].id, afterAction: 'done' };
+        S.rpeModal = { exId: ex.id, afterAction: 'done' };
       } else {
         startRest(); return;
       }
