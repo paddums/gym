@@ -180,6 +180,47 @@
     .plate-row { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
     .plate-chip { font-size: 13px; font-weight: 800; padding: 5px 10px; border-radius: 8px; border-width: 1px; border-style: solid; }
 
+    /* ── Gym compact mode ── */
+    #header { padding: 8px 12px 0; }
+    .header-top { padding-bottom: 7px; }
+    .eyebrow { font-size: 9px; letter-spacing: 0.18em; }
+    .app-title { font-size: 18px; }
+    .prog-track { width: 78px; height: 6px; }
+    .pct-label { font-size: 11px; min-width: 30px; }
+    .tab-btn { padding: 7px 0; font-size: 12px; }
+    .nav-inner { gap: 7px; padding: 7px 12px; }
+    .nav-btn { width: 34px; height: 34px; border-radius: 10px; font-size: 13px; }
+    #main { padding: 10px 12px 18px; gap: 10px; }
+    .card { border-radius: 14px; padding: 12px; }
+    .set-btn { height: 54px; border-radius: 13px; }
+    .set-num { font-size: 22px; }
+    .set-label { font-size: 8px; }
+    .set-check { font-size: 20px; }
+    .leg-header { margin-bottom: 6px; }
+    .section-divider { margin: 8px 0; }
+    .chips { gap: 5px; margin-top: 5px; }
+    .chip { font-size: 10px; padding: 2px 8px; }
+    .block-header { border-radius: 14px; padding: 9px 10px; }
+    .block-label { font-size: 9px; letter-spacing: 0.18em; }
+    .block-name { font-size: 14px; }
+    .pair-tab { margin-top: 7px; }
+    .pair-tab-btn { padding: 6px 4px; font-size: 10px; }
+    .weight-input { width: 70px; padding: 6px 8px; font-size: 16px; }
+    .nav-btns { gap: 8px; }
+    .btn-back, .btn-next { padding: 12px 0; border-radius: 12px; font-size: 13px; }
+    .done-banner { border-radius: 14px; padding: 10px 12px; gap: 10px; }
+    .done-title { font-size: 14px; }
+    .done-sub { font-size: 11px; }
+
+    .fold-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 14px; overflow: hidden; }
+    .fold-card summary { list-style: none; cursor: pointer; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.16em; color: #60a5fa; font-family: 'Manrope', sans-serif; }
+    .fold-card summary::-webkit-details-marker { display: none; }
+    .fold-card summary::after { content: "+"; color: #64748b; font-size: 16px; line-height: 1; }
+    .fold-card[open] summary::after { content: "-"; }
+    .fold-body { padding: 0 12px 12px; color: #cbd5e1; font-size: 13px; line-height: 1.55; }
+    .fold-card .tempo-card { background: transparent; border: 0; border-radius: 0; padding: 0; }
+    .fold-card .comment-textarea { min-height: 68px; }
+
     .hidden { display: none !important; }
   </style>
 </head>
@@ -869,30 +910,50 @@ function renderToday() {
     : (suggestion ? `Last: ${suggestion.prev}kg` : '');
   const painVal = sess.pain?.[ex.id] || '';
   const painRow = `
-    <div style="margin-top:14px;padding-top:14px;border-top:1px solid #1e293b">
-      <div class="mini-label" style="margin-bottom:8px">Knee Check</div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #1e293b">
+      <div class="mini-label" style="margin-bottom:6px">Knee Check</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
         ${[
           ['0','No pain','#34d399'],
           ['1-2','Aware','#60a5fa'],
           ['3+','Back off','#f59e0b']
         ].map(([val,label,color]) => `<button onclick="savePain(${ex.id}, '${val}')"
-          style="min-height:48px;border-radius:12px;font-size:13px;font-weight:900;
+          style="min-height:40px;border-radius:10px;font-size:12px;font-weight:900;
                  background:${painVal===val?`${color}22`:'#162032'};color:${painVal===val?color:'#94a3b8'};
                  border:1px solid ${painVal===val?`${color}88`:'#1e2d42'}">
-          ${val}<br><span style="font-size:10px;font-weight:800;opacity:0.75">${label}</span>
+          ${val}<br><span style="font-size:9px;font-weight:800;opacity:0.75">${label}</span>
         </button>`).join('')}
       </div>
     </div>`;
   const weightField = ex.bodyweight ? '' : `
-    <div class="bw-row" style="margin-bottom:${hintText?'6':'14'}px">
+    <div class="bw-row" style="margin-bottom:${hintText?'4':'8'}px">
       <span class="mini-label" style="flex:1">${weightLabel}</span>
       <input class="weight-input" type="number" min="0" max="999" step="${ex.trackReps ? 1 : 0.5}"
         placeholder="—" value="${weightVal}"
         onchange="saveExWeight(${ex.id}, this.value)">
       <span class="bw-unit">${weightUnit}</span>
     </div>
-    ${hintText ? `<div style="font-size:11px;font-weight:600;color:${hintColor};margin-bottom:12px;padding-left:2px">${hintText}</div>` : ''}`;
+    ${hintText ? `<div style="font-size:11px;font-weight:600;color:${hintColor};margin-bottom:8px;padding-left:2px">${hintText}</div>` : ''}`;
+
+  const cueFold = `
+    <details class="fold-card">
+      <summary>Physio Note</summary>
+      <div class="fold-body">${ex.cue}</div>
+    </details>`;
+  const tempoFold = ex.tempo ? `
+    <details class="fold-card" ${S.tempo.on || S.tempo.countdown > 0 ? 'open' : ''}>
+      <summary>Tempo Guide</summary>
+      <div class="fold-body">${tempoHTML(ex.tempo)}</div>
+    </details>` : '';
+  const notesFold = `
+    <details class="fold-card" ${sess.comment ? 'open' : ''}>
+      <summary>Session Notes</summary>
+      <div class="fold-body">
+        <textarea class="comment-textarea"
+          placeholder="Equipment issues, form unsure, pain level, anything for your physio..."
+          oninput="saveComment(this.value)">${sess.comment || ''}</textarea>
+      </div>
+    </details>`;
 
 
   document.getElementById("main").innerHTML = `
@@ -905,11 +966,11 @@ function renderToday() {
     <div style="display:flex;align-items:flex-start;justify-content:space-between">
       <div style="flex:1">
         <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.18em;color:#475569;font-weight:700">${isBlockWorkout() ? `Block ${blockLetterForExIdx(S.idx)} · Ex ${posInBlock(S.idx, exs) + 1}/${blockSizeForExIdx(S.idx, exs)}` : `${S.idx+1} / ${exs.length}`}</div>
-        <div style="font-size:26px;font-weight:900;margin-top:4px;line-height:1.2;letter-spacing:-0.02em">${ex.icon} ${ex.fullName}</div>
+        <div style="font-size:22px;font-weight:900;margin-top:2px;line-height:1.15;letter-spacing:0">${ex.icon} ${ex.fullName}</div>
         ${chips}
       </div>
       <div style="text-align:right;flex-shrink:0;margin-left:12px">
-        <div style="font-size:${ex.reps.length > 6 ? '22' : '34'}px;font-weight:900;color:#3b82f6;line-height:1">${ex.reps}</div>
+        <div style="font-size:${ex.reps.length > 6 ? '20' : '28'}px;font-weight:900;color:#3b82f6;line-height:1">${ex.reps}</div>
         <div style="font-size:10px;color:#475569;margin-top:4px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em">${ex.isDuration?"duration":"reps / set"}</div>
         ${sym ? `<div style="font-size:11px;color:#64748b;margin-top:2px">${ex.leftSets} sets</div>` : ""}
       </div>
@@ -920,20 +981,13 @@ function renderToday() {
     <div class="card">
       ${weightField}
       ${ex.plateCalc ? plateCalcHTML(ex.id, ex.barKg) : ''}
-      <div class="mini-label" style="margin-bottom:14px">Log Sets — Tap to Complete</div>
+      <div class="mini-label" style="margin-bottom:8px">Log Sets — Tap to Complete</div>
       <div id="sets-container">${setsHtml}</div>
       ${painRow}
-      ${sess.ratings[ex.id] ? `<div style="margin-top:12px;text-align:center;font-size:12px;color:#334155;font-weight:600">Rated: ${ratingLabel(sess.ratings[ex.id])}</div>` : ''}
+      ${sess.ratings[ex.id] ? `<div style="margin-top:8px;text-align:center;font-size:11px;color:#334155;font-weight:600">Rated: ${ratingLabel(sess.ratings[ex.id])}</div>` : ''}
     </div>
 
     ${doneBanner}
-
-    <div class="cue-card">
-      <span style="font-size:18px;flex-shrink:0;margin-top:2px">💬</span>
-      <div><div class="cue-heading">Physio Note</div><div class="cue-text">${ex.cue}</div></div>
-    </div>
-
-    ${ex.tempo ? tempoHTML(ex.tempo) : ""}
 
     ${(() => {
       if (isBlockWorkout()) {
@@ -955,15 +1009,11 @@ function renderToday() {
 
     ${allDone}
 
-    <!-- Session notes -->
-    <div class="card">
-      <div class="mini-label" style="margin-bottom:8px">Session Notes</div>
-      <textarea class="comment-textarea"
-        placeholder="Equipment issues, form unsure, pain level, anything for your physio…"
-        oninput="saveComment(this.value)">${sess.comment || ''}</textarea>
-    </div>
+    ${cueFold}
+    ${tempoFold}
+    ${notesFold}
 
-    <div style="height:32px"></div>`;
+    <div style="height:18px"></div>`;
 
   if (S.resting) startRestDisplay();
   if (S.tempo.on || S.tempo.countdown > 0) refreshTempoDisplay();
